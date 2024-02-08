@@ -1,5 +1,6 @@
 package com.oxuegen.securitybank.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -15,17 +16,37 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.sql.DataSource;
+import java.util.Collections;
 import java.util.function.Function;
 
 @Configuration
 public class ProjectSecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable().authorizeHttpRequests((requests) -> {
+        http.cors().configurationSource(new CorsConfigurationSource() {
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration config = new CorsConfiguration();
+                        config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+                        config.setAllowedMethods(Collections.singletonList("*"));
+                        config.setAllowCredentials(true);
+                        config.setAllowedHeaders(Collections.singletonList("*"));
+                        config.setMaxAge(3600L);
+                        return config;
+                    }
+                })
+                .and()
+                .csrf().ignoringRequestMatchers("/register", "/contact").and().authorizeHttpRequests((requests) -> {
             requests
-                    .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
+                    .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+                    .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT", "VIEWBALANCE")
+                    .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                    .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+                    .requestMatchers("/user").authenticated()
                     .requestMatchers("/notices", "/contact", "/register").permitAll();
         });
         http.formLogin(Customizer.withDefaults());
@@ -54,6 +75,6 @@ public class ProjectSecurityConfig {
 
     @Bean
     PasswordEncoder passwordEncoder(){
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 }
