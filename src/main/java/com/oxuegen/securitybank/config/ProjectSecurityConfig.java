@@ -1,7 +1,9 @@
 package com.oxuegen.securitybank.config;
 
+//import com.oxuegen.securitybank.filter.RequestValidationBeforeFilter;
 import com.oxuegen.securitybank.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,6 +20,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -82,4 +85,5 @@ public class ProjectSecurityConfig {
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 }
