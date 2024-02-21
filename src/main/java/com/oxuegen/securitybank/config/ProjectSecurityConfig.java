@@ -1,6 +1,8 @@
 package com.oxuegen.securitybank.config;
 
 //import com.oxuegen.securitybank.filter.RequestValidationBeforeFilter;
+import com.oxuegen.securitybank.filter.JWTTokenGeneratorFilter;
+import com.oxuegen.securitybank.filter.JWTTokenValidatorFilter;
 import com.oxuegen.securitybank.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -10,6 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,7 +35,9 @@ import java.util.function.Function;
 public class ProjectSecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.cors().configurationSource(new CorsConfigurationSource() {
+        http
+                //.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+        .cors().configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
@@ -48,6 +53,8 @@ public class ProjectSecurityConfig {
                 .csrf().ignoringRequestMatchers("/register", "/contact")
                 .and()
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+         //       .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+         //       .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> {
             requests
                     .requestMatchers("/myAccount").hasRole("USER")
